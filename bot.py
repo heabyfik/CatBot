@@ -19,6 +19,8 @@ import logging
 from telegram import Update, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
+from service.facts import get_random_fact
+
 # Enable logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
@@ -38,8 +40,14 @@ def start(update: Update, context: CallbackContext) -> None:
     )
 
 
+def fact_command(update: Update, context: CallbackContext) -> None:
+    """Send a message when the command /fact is issued."""
+    update.message.reply_text(get_random_fact())
+
+
 def help_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /help is issued."""
+    # TODO: change it
     update.message.reply_text('Help!')
 
 
@@ -60,6 +68,7 @@ def main() -> None:
     # on different commands - answer in Telegram
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help_command))
+    dispatcher.add_handler(CommandHandler("fact", fact_command))
 
     # on non command i.e message - echo the message on Telegram
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
