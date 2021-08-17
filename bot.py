@@ -5,6 +5,7 @@ from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 from service.facts import get_random_fact
+from service.balaboba import get_random_story
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
@@ -41,7 +42,7 @@ def cute_command(update: Update, context: CallbackContext) -> None:
 
 def story_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /story is issued."""
-    update.message.reply_text("Этот функционал пока не готов")
+    update.message.reply_text(get_random_story())
 
 
 def help_command(update: Update, context: CallbackContext) -> None:
