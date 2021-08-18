@@ -1,6 +1,7 @@
 import os
 import logging
 
+from random import choice
 from random import randint
 
 from telegram import Update
@@ -44,9 +45,17 @@ def cute_command(update: Update, context: CallbackContext) -> None:
     context.bot.send_photo(chat_id=update.effective_chat.id, photo=f"https://cataas.com/cat/cute?_nocache={r}")
 
 
+def funny_command(update: Update, context: CallbackContext) -> None:
+    """Send a message when the command /funny is issued."""
+    r = randint(0, 100000000)
+    context.bot.send_photo(chat_id=update.effective_chat.id,
+                           photo=f"https://cataas.com/cat/cute?_nocache={r}",
+                           caption=get_random_story(intro=choice([4, 4, 4, 8, 11])))
+
+
 def story_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /story is issued."""
-    update.message.reply_text(get_random_story())
+    update.message.reply_text(get_random_story(intro=choice([0, 6])))
 
 
 def help_command(update: Update, context: CallbackContext) -> None:
@@ -56,6 +65,7 @@ def help_command(update: Update, context: CallbackContext) -> None:
     message += r"```/cat``` \- отправлю картинку котика" + "\n"
     message += r"```/cute``` \- отправлю милого котика^^" + "\n"
     message += r"```/story``` \- расскажу историю" + "\n"
+    message += r"```/funny``` \- попробую рассмешить" + "\n"
 
     update.message.reply_markdown_v2(message)
 
@@ -81,6 +91,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("cat", cat_command))
     dispatcher.add_handler(CommandHandler("cute", cute_command))
     dispatcher.add_handler(CommandHandler("story", story_command))
+    dispatcher.add_handler(CommandHandler("funny", funny_command))
     # on non command i.e message - print hint
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, unknown_command))
 
