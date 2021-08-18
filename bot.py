@@ -1,6 +1,8 @@
 import os
 import logging
 
+from random import randint
+
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
@@ -32,12 +34,14 @@ def fact_command(update: Update, context: CallbackContext) -> None:
 
 def cat_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /cat is issued."""
-    update.message.reply_text("Этот функционал пока не готов")
+    r = randint(0, 100000000)
+    context.bot.send_photo(chat_id=update.effective_chat.id, photo=f"https://cataas.com/cat?_nocache={r}")
 
 
 def cute_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /cute is issued."""
-    update.message.reply_text("Этот функционал пока не готов")
+    r = randint(0, 100000000)
+    context.bot.send_photo(chat_id=update.effective_chat.id, photo=f"https://cataas.com/cat/cute?_nocache={r}")
 
 
 def story_command(update: Update, context: CallbackContext) -> None:
