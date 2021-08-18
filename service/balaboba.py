@@ -27,7 +27,7 @@ seeds = [
 ]
 
 
-def get_random_story():
+def get_random_story(intro=0):
     i = randint(0, len(seeds) - 1)
     seed = seeds[i]
 
@@ -40,7 +40,7 @@ def get_random_story():
     }
 
     API_URL = 'https://zeapi.yandex.net/lab/api/yalm/text3'
-    payload = {"query": seed, "intro": 0, "filter": 1}
+    payload = {"query": seed, "intro": intro, "filter": 1}
     params = json.dumps(payload).encode('utf-8')
 
     req = urllib.request.Request(API_URL, data=params, headers=headers)
