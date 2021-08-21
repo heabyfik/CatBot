@@ -23,7 +23,7 @@ def start_command(update: Update, context: CallbackContext) -> None:
     message = fr'Привет, {user.mention_markdown_v2()}\!' + "\n\n"
     message += r"Я небольшой бот для любителей котиков и очень рад знакомству с тобой\." + "\n\n"
     message += r"Могу показать милых котиков, рассказать много интересных фактов и просто пообщаться с тобой, только попроси\." + "\n\n"
-    message += r"Набери ```/help```, чтобы посмотреть мои команды\."
+    message += r"Набери /help, чтобы посмотреть мои команды\."
 
     update.message.reply_markdown_v2(message)
 
@@ -61,13 +61,13 @@ def story_command(update: Update, context: CallbackContext) -> None:
 def help_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /help is issued."""
     message = r"К вашим услугам\! Вот что я умею:" + "\n\n"
-    message += r"```/fact``` \- расскажу интересный факт" + "\n"
-    message += r"```/cat``` \- отправлю картинку котика" + "\n"
-    message += r"```/cute``` \- отправлю милого котика^^" + "\n"
-    message += r"```/story``` \- расскажу историю" + "\n"
-    message += r"```/funny``` \- попробую рассмешить" + "\n"
+    message += r"/fact \- расскажу интересный факт" + "\n"
+    message += r"/cat \- отправлю картинку котика" + "\n"
+    message += r"/cute \- отправлю милого котика^^" + "\n"
+    message += r"/story \- расскажу историю" + "\n"
+    message += r"/funny \- попробую рассмешить" + "\n"
     message += "\n"
-    message += r"```/about``` \- расскажу немного о себе" + "\n"
+    message += r"/about \- расскажу немного о себе" + "\n"
 
     update.message.reply_markdown_v2(message)
 
@@ -75,7 +75,7 @@ def help_command(update: Update, context: CallbackContext) -> None:
 def about_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /about is issued."""
     message = r"Здорово, что вы заинтересовались\!" + "\n\n"
-    message += r"Для отправки изображений я использую API [CaaS](https://cataas.com/)\. "
+    message += r"Для отправки изображений я использую API [CATAAS](https://cataas.com/)\. "
     message += r"А для генерации текстов работает [Балабоба](https://yandex.ru/lab/yalm) от Яндекс, "
     message += r"поэтому не принимайте близко к сердцу то, о чём я рассказываю :\)" + "\n"
     message += "\n"
@@ -87,7 +87,7 @@ def about_command(update: Update, context: CallbackContext) -> None:
 def unknown_command(update: Update, context: CallbackContext) -> None:
     """Answer to unknown user command."""
     logging.info(update.message.text)
-    message = r"Ой, а такой команды я не знаю\.\.\. Попробуй ```/help```\."
+    message = r"Ой, а такой команды я не знаю\.\.\. Попробуй /help"
 
     update.message.reply_markdown_v2(message)
 
@@ -96,7 +96,7 @@ def photo_handler(update: Update, context: CallbackContext) -> None:
     """Answer to photo upload."""
     for p in update.message.photo:
         print(p.get_file())
-    message = r"Ой, а такой команды я не знаю\.\.\. Попробуй ```/help```\."
+    message = r"Ой, а такой команды я не знаю\.\.\. Попробуй /help"
 
     update.message.reply_markdown_v2(message)
 
