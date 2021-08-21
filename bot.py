@@ -66,6 +66,20 @@ def help_command(update: Update, context: CallbackContext) -> None:
     message += r"```/cute``` \- отправлю милого котика^^" + "\n"
     message += r"```/story``` \- расскажу историю" + "\n"
     message += r"```/funny``` \- попробую рассмешить" + "\n"
+    message += "\n"
+    message += r"```/about``` \- расскажу немного о себе" + "\n"
+
+    update.message.reply_markdown_v2(message)
+
+
+def about_command(update: Update, context: CallbackContext) -> None:
+    """Send a message when the command /about is issued."""
+    message = r"Здорово, что вы заинтересовались\!" + "\n\n"
+    message += r"Для отправки изображений я использую API [CaaS](https://cataas.com/)\. "
+    message += r"А для генерации текстов работает [Балабоба](https://yandex.ru/lab/yalm) от Яндекс, "
+    message += r"поэтому не принимайте близко к сердцу то, о чём я рассказываю :\)" + "\n"
+    message += "\n"
+    message += r"Мой исходный код на гитхаб: https://github\.com/heabyfik/CatBot"
 
     update.message.reply_markdown_v2(message)
 
@@ -93,14 +107,17 @@ def main() -> None:
 
     # get the dispatcher to register handlers
     dispatcher = updater.dispatcher
-    # on different commands - answer in Telegram
+    # control commands
     dispatcher.add_handler(CommandHandler("start", start_command))
     dispatcher.add_handler(CommandHandler("help", help_command))
+    dispatcher.add_handler(CommandHandler("about", about_command))
+    # cat commands
     dispatcher.add_handler(CommandHandler("fact", fact_command))
     dispatcher.add_handler(CommandHandler("cat", cat_command))
     dispatcher.add_handler(CommandHandler("cute", cute_command))
     dispatcher.add_handler(CommandHandler("story", story_command))
     dispatcher.add_handler(CommandHandler("funny", funny_command))
+
     # on non command i.e message - print hint
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, unknown_command))
     dispatcher.add_handler(MessageHandler(Filters.photo, photo_handler))
