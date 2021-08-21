@@ -78,6 +78,15 @@ def unknown_command(update: Update, context: CallbackContext) -> None:
     update.message.reply_markdown_v2(message)
 
 
+def photo_handler(update: Update, context: CallbackContext) -> None:
+    """Answer to photo upload."""
+    for p in update.message.photo:
+        print(p.get_file())
+    message = r"Ой, а такой команды я не знаю\.\.\. Попробуй ```/help```\."
+
+    update.message.reply_markdown_v2(message)
+
+
 def main() -> None:
     """Start the bot."""
     updater = Updater(os.environ.get("TELEGRAM_BOT_KEY"))
@@ -94,6 +103,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("funny", funny_command))
     # on non command i.e message - print hint
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, unknown_command))
+    dispatcher.add_handler(MessageHandler(Filters.photo, photo_handler))
 
     updater.start_polling()
     updater.idle()
