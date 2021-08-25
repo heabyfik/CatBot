@@ -9,6 +9,8 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Callb
 
 from service.facts import get_random_fact
 from service.balaboba import get_random_story
+from service.top_cat import get_random_top_cat_text
+from service.top_cat import get_random_top_cat_photo
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
@@ -58,6 +60,13 @@ def story_command(update: Update, context: CallbackContext) -> None:
     update.message.reply_text(get_random_story(intro=choice([0, 6])))
 
 
+def top_cat_command(update: Update, context: CallbackContext) -> None:
+    """Send a message when the command /top_cat is issued."""
+    context.bot.send_photo(chat_id=update.effective_chat.id,
+                           photo=get_random_top_cat_photo(),
+                           caption=get_random_top_cat_text())
+
+
 def help_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /help is issued."""
     message = r"К вашим услугам\! Вот что я умею:" + "\n\n"
@@ -66,6 +75,7 @@ def help_command(update: Update, context: CallbackContext) -> None:
     message += r"/cute \- отправлю милого котика^^" + "\n"
     message += r"/story \- расскажу историю" + "\n"
     message += r"/funny \- попробую рассмешить" + "\n"
+    message += r"/top\_cat \- покажу топового кота" + "\n"
     message += "\n"
     message += r"/about \- расскажу немного о себе" + "\n"
 
@@ -117,6 +127,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("cute", cute_command))
     dispatcher.add_handler(CommandHandler("story", story_command))
     dispatcher.add_handler(CommandHandler("funny", funny_command))
+    dispatcher.add_handler(CommandHandler("top_cat", top_cat_command))
 
     # on non command i.e message - print hint
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, unknown_command))
