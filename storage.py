@@ -16,12 +16,12 @@ class Photo(Base):
 
     id = Column(Integer, primary_key=True)
 
-    path = Column(String)
+    file_id = Column(String)
     chat_id = Column(Integer)
     description = Column(String)
 
-    def __init__(self, path, chat_id, description):
-        self.path = path
+    def __init__(self, file_id, chat_id, description):
+        self.file_id = file_id
         self.chat_id = chat_id
         self.description = description
 
