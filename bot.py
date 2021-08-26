@@ -1,11 +1,23 @@
 import os
+import time
 import logging
 
 from random import choice
 from random import randint
 
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import (
+    CallbackContext,
+    ConversationHandler,
+    CommandHandler,
+    Filters,
+    MessageHandler,
+    Updater,
+)
+
+from storage import Photo
+from storage import add_photo
+from storage import get_random_photo
 
 from service.facts import get_random_fact
 from service.balaboba import get_random_story
@@ -19,6 +31,24 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def log(func):
+    """Logging decorator."""
+    def wrap(update: Update, context: CallbackContext):
+        start = time.time()
+        result = func(update, context)
+        end = time.time()
+
+        logger.info(f"{func.__name__} [{update.effective_user.username}]: {update.message.text} ({end - start})")
+
+        return result
+
+    return wrap
+
+
+temp_storage = {}
+
+
+@log
 def start_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /start is issued."""
     user = update.effective_user
@@ -30,23 +60,27 @@ def start_command(update: Update, context: CallbackContext) -> None:
     update.message.reply_markdown_v2(message)
 
 
+@log
 def fact_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /fact is issued."""
     update.message.reply_text(get_random_fact())
 
 
+@log
 def cat_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /cat is issued."""
     r = randint(0, 100000000)
     context.bot.send_photo(chat_id=update.effective_chat.id, photo=f"https://cataas.com/cat?_nocache={r}")
 
 
+@log
 def cute_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /cute is issued."""
     r = randint(0, 100000000)
     context.bot.send_photo(chat_id=update.effective_chat.id, photo=f"https://cataas.com/cat/cute?_nocache={r}")
 
 
+@log
 def funny_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /funny is issued."""
     r = randint(0, 100000000)
@@ -55,11 +89,13 @@ def funny_command(update: Update, context: CallbackContext) -> None:
                            caption=get_random_story(intro=choice([4, 4, 4, 8, 11])))
 
 
+@log
 def story_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /story is issued."""
     update.message.reply_text(get_random_story(intro=choice([0, 6])))
 
 
+@log
 def top_cat_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /top_cat is issued."""
     context.bot.send_photo(chat_id=update.effective_chat.id,
@@ -67,6 +103,16 @@ def top_cat_command(update: Update, context: CallbackContext) -> None:
                            caption=get_random_top_cat_text())
 
 
+@log
+def gallery_command(update: Update, context: CallbackContext) -> None:
+    """Send a message when the command /gallery is issued."""
+    photo: Photo = get_random_photo()
+    context.bot.send_photo(chat_id=update.effective_chat.id,
+                           photo=photo.file_id,
+                           caption=photo.description)
+
+
+@log
 def help_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /help is issued."""
     message = r"К вашим услугам\! Вот что я умею:" + "\n\n"
@@ -77,11 +123,15 @@ def help_command(update: Update, context: CallbackContext) -> None:
     message += r"/funny \- попробую рассмешить" + "\n"
     message += r"/top\_cat \- покажу топового кота" + "\n"
     message += "\n"
+    message += r"/gallery \- покажу кота из своей коллекции" + "\n"
+    message += r"/upload \- добавляю вашего котика" + "\n"
+    message += "\n"
     message += r"/about \- расскажу немного о себе" + "\n"
 
     update.message.reply_markdown_v2(message)
 
 
+@log
 def about_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /about is issued."""
     message = r"Здорово, что вы заинтересовались\!" + "\n\n"
@@ -94,6 +144,7 @@ def about_command(update: Update, context: CallbackContext) -> None:
     update.message.reply_markdown_v2(message)
 
 
+@log
 def unknown_command(update: Update, context: CallbackContext) -> None:
     """Answer to unknown user command."""
     logging.info(update.message.text)
@@ -102,13 +153,57 @@ def unknown_command(update: Update, context: CallbackContext) -> None:
     update.message.reply_markdown_v2(message)
 
 
-def photo_handler(update: Update, context: CallbackContext) -> None:
-    """Answer to photo upload."""
-    for p in update.message.photo:
-        print(p.get_file())
-    message = r"Ой, а такой команды я не знаю\.\.\. Попробуй /help"
+# for conversation
+PHOTO, DESCRIPTION = range(2)
 
-    update.message.reply_markdown_v2(message)
+
+@log
+def conversation_start(update: Update, context: CallbackContext) -> int:
+    """Starts the conversation and asks for photo upload."""
+    update.message.reply_text(
+        'Вы решили рассказать про своего питомца? Очень здорово!\n\n' +
+        'Отправляйте фото своего пушистика прямо сюда.\n\n' +
+        'Или отправьте /cancel чтобы завершить диалог.'
+    )
+
+    return PHOTO
+
+
+@log
+def conversation_photo(update: Update, context: CallbackContext) -> int:
+    """Handles photo upload."""
+    photo = update.message.photo[-1].get_file()
+    temp_storage[update.effective_chat.id] = photo.file_id
+    update.message.reply_text('Супер! Теперь вы можете немного про него рассказать, а я всё это сохраню.')
+
+    return DESCRIPTION
+
+
+@log
+def conversation_description(update: Update, context: CallbackContext) -> int:
+    """Stores the info about cat."""
+    chat_id = update.effective_chat.id
+    file_id = temp_storage.get(chat_id, "")
+    description = update.message.text
+
+    p = Photo(file_id, chat_id, description)
+    add_photo(p)
+
+    temp_storage.pop(chat_id, None)
+    update.message.reply_text(
+        'Отлично! Теперь ваш питомец тоже в моей коллекции.\n\n' +
+        'Чтобы продолжить общение наберите /help'
+    )
+
+    return ConversationHandler.END
+
+
+@log
+def conversation_cancel(update: Update, context: CallbackContext) -> int:
+    """Cancels and ends the conversation."""
+    update.message.reply_text('Хорошо. Надеюсь, вы поделитесь со мной в следуюий раз.')
+
+    return ConversationHandler.END
 
 
 def main() -> None:
@@ -128,10 +223,21 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("story", story_command))
     dispatcher.add_handler(CommandHandler("funny", funny_command))
     dispatcher.add_handler(CommandHandler("top_cat", top_cat_command))
+    dispatcher.add_handler(CommandHandler("gallery", gallery_command))
+
+    # Photo upload conversation
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler('upload', conversation_start)],
+        states={
+            PHOTO: [MessageHandler(Filters.photo, conversation_photo)],
+            DESCRIPTION: [MessageHandler(Filters.text & ~Filters.command, conversation_description)],
+        },
+        fallbacks=[CommandHandler('cancel', conversation_cancel)],
+    )
+    dispatcher.add_handler(conv_handler)
 
     # on non command i.e message - print hint
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, unknown_command))
-    dispatcher.add_handler(MessageHandler(Filters.photo, photo_handler))
 
     updater.start_polling()
     updater.idle()
