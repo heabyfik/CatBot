@@ -16,7 +16,7 @@ phrases = [
 
 
 def get_random_top_cat_photo():
-    i = randint(1, 6)
+    i = randint(1, 12)
     return open(os.path.dirname(__file__) + f"/../files/cat{i}.jpg", 'rb')
 
 
