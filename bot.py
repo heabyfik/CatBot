@@ -201,7 +201,7 @@ def conversation_description(update: Update, context: CallbackContext) -> int:
 @log
 def conversation_cancel(update: Update, context: CallbackContext) -> int:
     """Cancels and ends the conversation."""
-    update.message.reply_text('Хорошо. Надеюсь, вы поделитесь со мной в следуюий раз.')
+    update.message.reply_text('Хорошо. Надеюсь, вы поделитесь со мной в следующий раз.')
 
     return ConversationHandler.END
 
