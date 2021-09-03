@@ -43,8 +43,12 @@ def get_random_story(intro=0):
     payload = {"query": seed, "intro": intro, "filter": 1}
     params = json.dumps(payload).encode('utf-8')
 
-    req = urllib.request.Request(API_URL, data=params, headers=headers)
-    response = urllib.request.urlopen(req)
-    j = json.loads(response.read().decode('utf-8'))
+    try:
+        req = urllib.request.Request(API_URL, data=params, headers=headers)
+        response = urllib.request.urlopen(req)
+        j = json.loads(response.read().decode('utf-8'))
 
-    return j["query"] + j["text"]
+        return j["query"] + j["text"]
+    except Exception as e:
+        print(e)
+        return "Ой, что-то пошло не так. Повторите попытку позже."

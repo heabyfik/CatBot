@@ -5,6 +5,7 @@ import logging
 from random import choice
 from random import randint
 
+import telegram.error
 from telegram import Update
 from telegram.ext import (
     CallbackContext,
@@ -31,6 +32,8 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+
+BAD_REQUEST = "Отправка изображений временно недоступна, попробуйте пока другую команду. Вот список: /help"
 
 
 def log(func):
@@ -72,24 +75,33 @@ def fact_command(update: Update, context: CallbackContext) -> None:
 @log
 def cat_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /cat is issued."""
-    r = randint(0, 100000000)
-    context.bot.send_photo(chat_id=update.effective_chat.id, photo=f"https://cataas.com/cat?_nocache={r}")
+    try:
+        r = randint(0, 100000000)
+        context.bot.send_photo(chat_id=update.effective_chat.id, photo=f"https://cataas.com/cat?_nocache={r}")
+    except telegram.error.BadRequest:
+        update.message.reply_text(BAD_REQUEST)
 
 
 @log
 def cute_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /cute is issued."""
-    r = randint(0, 100000000)
-    context.bot.send_photo(chat_id=update.effective_chat.id, photo=f"https://cataas.com/cat/cute?_nocache={r}")
+    try:
+        r = randint(0, 100000000)
+        context.bot.send_photo(chat_id=update.effective_chat.id, photo=f"https://cataas.com/cat/cute?_nocache={r}")
+    except telegram.error.BadRequest:
+        update.message.reply_text(BAD_REQUEST)
 
 
 @log
 def funny_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /funny is issued."""
-    r = randint(0, 100000000)
-    context.bot.send_photo(chat_id=update.effective_chat.id,
-                           photo=f"https://cataas.com/cat/cute?_nocache={r}",
-                           caption=get_random_story(intro=choice([4, 4, 4, 8, 11])))
+    try:
+        r = randint(0, 100000000)
+        context.bot.send_photo(chat_id=update.effective_chat.id,
+                               photo=f"https://cataas.com/cat/cute?_nocache={r}",
+                               caption=get_random_story(intro=choice([4, 4, 4, 8, 11])))
+    except telegram.error.BadRequest:
+        update.message.reply_text(BAD_REQUEST)
 
 
 @log
