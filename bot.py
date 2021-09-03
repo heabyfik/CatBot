@@ -21,6 +21,8 @@ from storage import get_random_photo
 
 from service.facts import get_random_fact
 from service.balaboba import get_random_story
+from service.http_cats import get_http_cat
+from service.http_cats import is_valid_status_code
 from service.top_cat import get_random_top_cat_text
 from service.top_cat import get_random_top_cat_photo
 
@@ -33,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 def log(func):
     """Logging decorator."""
+
     def wrap(update: Update, context: CallbackContext):
         start = time.time()
         result = func(update, context)
@@ -104,6 +107,30 @@ def top_cat_command(update: Update, context: CallbackContext) -> None:
 
 
 @log
+def http_command(update: Update, context: CallbackContext) -> None:
+    """Send a message when the command /http is issued."""
+    c = update.message.text.split(' ')
+    if len(c) != 2:
+        message = "Формат команды: /http <status_code>"
+        update.message.reply_text(message)
+        return
+
+    try:
+        status_code = int(c[1])
+        if not is_valid_status_code(status_code):
+            message = r"Такого кода я не знаю\." + "\n\n" + r"Попробуйте `/http 200`"
+            update.message.reply_markdown_v2(message)
+            return
+        else:
+            p = get_http_cat(status_code)
+            context.bot.send_photo(chat_id=update.effective_chat.id, photo=p)
+
+    except ValueError as e:
+        message = r"Не могу разобрать\." + "\n\n" + r"Попробуйте `/http 200`"
+        update.message.reply_markdown_v2(message)
+
+
+@log
 def gallery_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /gallery is issued."""
     photo: Photo = get_random_photo()
@@ -122,8 +149,9 @@ def help_command(update: Update, context: CallbackContext) -> None:
     message += r"/story \- расскажу историю" + "\n"
     message += r"/funny \- попробую рассмешить" + "\n"
     message += r"/top\_cat \- покажу топового кота" + "\n"
+    message += r"/http \<status\_code\> \- HTTP\-кот" + "\n"
     message += "\n"
-    message += r"/gallery \- покажу кота из своей коллекции" + "\n"
+    message += r"/gallery \- покажу кота из коллекции" + "\n"
     message += r"/upload \- добавляю вашего котика" + "\n"
     message += "\n"
     message += r"/about \- расскажу немного о себе" + "\n"
@@ -135,7 +163,7 @@ def help_command(update: Update, context: CallbackContext) -> None:
 def about_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /about is issued."""
     message = r"Здорово, что вы заинтересовались\!" + "\n\n"
-    message += r"Для отправки изображений я использую API [CATAAS](https://cataas.com/)\. "
+    message += r"Для отправки изображений я использую API [CATAAS](https://cataas.com/) и [HTTP Cats](https://http.cat/)\. "
     message += r"А для генерации текстов работает [Балабоба](https://yandex.ru/lab/yalm) от Яндекс, "
     message += r"поэтому не принимайте близко к сердцу то, о чём я рассказываю :\)" + "\n"
     message += "\n"
@@ -222,6 +250,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("cute", cute_command))
     dispatcher.add_handler(CommandHandler("story", story_command))
     dispatcher.add_handler(CommandHandler("funny", funny_command))
+    dispatcher.add_handler(CommandHandler("http", http_command))
     dispatcher.add_handler(CommandHandler("top_cat", top_cat_command))
     dispatcher.add_handler(CommandHandler("gallery", gallery_command))
 
