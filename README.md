@@ -21,3 +21,6 @@ Version 1.0 additional commands:
 - **/gallery** - sends random cat from collection
 - **/upload** - adds photo (with description) to gallery
 
+[NEW] Version 1.1 commands:
+- **/http <status_code>** - sends HTTP-cat
+
